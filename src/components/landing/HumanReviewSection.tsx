@@ -49,14 +49,23 @@ export function HumanReviewSection() {
             {/* Photo */}
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-lg overflow-hidden shadow-xl">
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-lg overflow-hidden shadow-xl bg-primary/10 flex items-center justify-center">
                   <img
                     src="/images/human-review/professional-photo.webp"
                     alt="José Francisco Castillo Miras - Arquitecto e Ingeniero"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback to placeholder if image doesn't exist
-                      e.currentTarget.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face";
+                      // Never substitute a stock face here: this photo sits next to a
+                      // named, licensed professional and his colegiado number, so a
+                      // stranger's picture would misrepresent him. Fall back to his
+                      // initials instead.
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement?.classList.add('text-primary');
+                      const initials = document.createElement('span');
+                      initials.className = 'text-5xl md:text-6xl font-bold text-primary';
+                      initials.textContent = 'JC';
+                      initials.setAttribute('aria-hidden', 'true');
+                      e.currentTarget.parentElement?.appendChild(initials);
                     }}
                   />
                 </div>

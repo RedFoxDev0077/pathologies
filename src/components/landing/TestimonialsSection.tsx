@@ -1,58 +1,77 @@
 import { Star, Quote } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
+/**
+ * Testimonials (document 4.1).
+ *
+ * - Photos removed (Option B in the document): the previous avatars were
+ *   Unsplash stock faces, which read as fake. Each card now shows initials +
+ *   name + city + pathology instead.
+ * - Rendered as a static grid rather than the previous infinite marquee. The
+ *   marquee had to render the array twice to loop seamlessly, which is what made
+ *   the same names appear repeatedly; the document asks for one instance of each.
+ */
 const testimonials = [
   {
     id: 1,
     name: "María García López",
+    initials: "MG",
     role: "Propietaria en Valencia",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    quote: "El diagnóstico me ayudó a entender exactamente el problema de humedad en mi vivienda. Muy profesional y claro en las explicaciones.",
+    // Supplied by the client in the "Cambios y Optimizaciones" document as the
+    // testimonial for the online report (mentions the phone consult and value).
+    quote:
+      "Hice el análisis gratis, subí las fotos, hablé con el arquitecto por teléfono y en 48 horas tenía el informe. Me ahorró una obra de 8.000 € que no necesitaba.",
     rating: 5,
-    pathology: "Humedades",
+    pathology: "Informe Técnico Online",
+    featured: true,
   },
   {
     id: 2,
     name: "Carlos Rodríguez Martín",
+    initials: "CR",
     role: "Administrador de fincas",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    quote: "Gestiono varias comunidades y este servicio me ha permitido documentar casos de forma eficiente. Los informes son muy completos.",
+    quote:
+      "Gestiono varias comunidades y este servicio me ha permitido documentar casos de forma eficiente. Los informes son muy completos.",
     rating: 5,
     pathology: "Grietas",
   },
   {
     id: 3,
     name: "Ana Fernández Ruiz",
+    initials: "AF",
     role: "Propietaria en Alicante",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    quote: "Tenía filtraciones en el techo y no sabía qué hacer. El informe técnico me dio la claridad que necesitaba para actuar.",
+    quote:
+      "Tenía filtraciones en el techo y no sabía qué hacer. El informe técnico me dio la claridad que necesitaba para actuar.",
     rating: 5,
     pathology: "Filtraciones",
   },
   {
     id: 4,
     name: "José Luis Martínez",
+    initials: "JM",
     role: "Abogado en Madrid",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    quote: "Necesitaba documentación técnica para un procedimiento judicial. El informe fue impecable y muy bien estructurado.",
+    quote:
+      "Necesitaba documentación técnica para un procedimiento judicial. El informe fue impecable y muy bien estructurado.",
     rating: 5,
     pathology: "Vicios constructivos",
   },
   {
     id: 5,
     name: "Laura Sánchez Pérez",
+    initials: "LS",
     role: "Propietaria en Castellón",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
-    quote: "Detectaron moho en una habitación y gracias al diagnóstico pude tomar las medidas correctas. Servicio excelente.",
+    quote:
+      "Detectaron moho en una habitación y gracias al diagnóstico pude tomar las medidas correctas. Servicio excelente.",
     rating: 5,
     pathology: "Moho",
   },
   {
     id: 6,
     name: "Pedro Navarro Gil",
+    initials: "PN",
     role: "Propietario en Valencia",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    quote: "Las grietas en mi fachada me preocupaban mucho. El técnico explicó todo de forma clara y sin alarmismos innecesarios.",
+    quote:
+      "Las grietas en mi fachada me preocupaban mucho. El técnico explicó todo de forma clara y sin alarmismos innecesarios.",
     rating: 5,
     pathology: "Fachadas",
   },
@@ -73,49 +92,52 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] }) {
-  return (
-    <div className="flex-shrink-0 w-[300px] md:w-[340px] p-6 bg-card rounded-xl border border-border shadow-sm hover:shadow-lg transition-all duration-300 group">
-      {/* Quote Icon */}
-      <div className="mb-4">
-        <Quote className="h-8 w-8 text-primary/20 group-hover:text-primary/40 transition-colors duration-300" />
-      </div>
+function TestimonialCard({
+  testimonial,
+  index,
+}: {
+  testimonial: typeof testimonials[0];
+  index: number;
+}) {
+  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>({ threshold: 0.15 });
 
-      {/* Rating */}
-      <div className="mb-3">
+  return (
+    <div
+      ref={ref}
+      className={`group flex h-full flex-col rounded-xl border bg-card p-6 shadow-sm transition-all duration-500 hover:shadow-lg ${
+        "featured" in testimonial && testimonial.featured
+          ? "border-primary/30 ring-1 ring-primary/20"
+          : "border-border"
+      } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+      style={{ transitionDelay: `${index * 70}ms` }}
+    >
+      <div className="mb-4 flex items-start justify-between">
+        <Quote className="h-8 w-8 text-primary/20 transition-colors duration-300 group-hover:text-primary/40" />
         <StarRating rating={testimonial.rating} />
       </div>
 
-      {/* Quote Text */}
-      <p className="text-sm text-muted-foreground leading-relaxed mb-6 italic">
-        "{testimonial.quote}"
+      <p className="mb-6 flex-1 text-sm italic leading-relaxed text-muted-foreground">
+        “{testimonial.quote}”
       </p>
 
-      {/* Client Info */}
+      {/* Option B: initials instead of a stock photo */}
       <div className="flex items-center gap-3">
-        {/* Avatar */}
-        <div className="relative h-12 w-12 rounded-full overflow-hidden ring-2 ring-border group-hover:ring-primary/30 transition-all duration-300">
-          <img
-            src={testimonial.image}
-            alt={testimonial.name}
-            className="h-full w-full object-cover"
-          />
+        <div
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary ring-2 ring-border transition-all duration-300 group-hover:ring-primary/30"
+          aria-hidden="true"
+        >
+          {testimonial.initials}
         </div>
-
-        {/* Name & Role */}
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm text-foreground truncate">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-foreground">
             {testimonial.name}
           </p>
-          <p className="text-xs text-muted-foreground truncate">
-            {testimonial.role}
-          </p>
+          <p className="truncate text-xs text-muted-foreground">{testimonial.role}</p>
         </div>
       </div>
 
-      {/* Pathology Badge */}
-      <div className="mt-4 pt-4 border-t border-border">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+      <div className="mt-4 border-t border-border pt-4">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           {testimonial.pathology}
         </span>
@@ -129,13 +151,9 @@ export function TestimonialsSection() {
     threshold: 0.3,
   });
 
-  // Duplicate testimonials for seamless infinite scroll
-  const duplicatedTestimonials = [...testimonials, ...testimonials];
-
   return (
-    <section className="section bg-muted/30 dark:bg-muted/20 overflow-hidden">
+    <section className="section bg-muted/30 dark:bg-muted/20">
       <div className="container">
-        {/* Header */}
         <div
           ref={headerRef}
           className={`section-header transition-all duration-600 ease-out ${
@@ -144,43 +162,30 @@ export function TestimonialsSection() {
         >
           <h2 className="section-title">Lo que dicen nuestros clientes</h2>
           <p className="section-subtitle">
-            Opiniones reales de propietarios, administradores y profesionales que han confiado en nuestro servicio
+            Opiniones de propietarios, administradores y profesionales que han
+            confiado en nuestro servicio
           </p>
         </div>
-      </div>
 
-      {/* Carousel Container - Full width */}
-      <div className="relative mt-8 md:mt-12">
-        {/* Gradient Fade Left */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background/80 dark:from-background/90 to-transparent z-10 pointer-events-none" />
-
-        {/* Gradient Fade Right */}
-        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background/80 dark:from-background/90 to-transparent z-10 pointer-events-none" />
-
-        {/* Scrolling Track */}
-        <div className="testimonials-carousel flex gap-6 py-4">
-          {duplicatedTestimonials.map((testimonial, index) => (
-            <TestimonialCard key={`${testimonial.id}-${index}`} testimonial={testimonial} />
+        {/* One instance of each (document 4.1) */}
+        <div className="mx-auto mt-8 grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-3 md:mt-12">
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
           ))}
         </div>
-      </div>
 
-      {/* Trust Indicator */}
-      <div className="container mt-8 md:mt-12">
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+        {/* Trust indicator */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
               {testimonials.slice(0, 4).map((t, i) => (
                 <div
                   key={t.id}
-                  className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-background"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary ring-2 ring-background"
                   style={{ zIndex: 4 - i }}
+                  aria-hidden="true"
                 >
-                  <img
-                    src={t.image}
-                    alt={t.name}
-                    className="h-full w-full object-cover"
-                  />
+                  {t.initials}
                 </div>
               ))}
             </div>

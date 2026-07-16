@@ -586,24 +586,9 @@
     animation-play-state: paused;
   }
 
-  /* Testimonials carousel animation */
-  @keyframes testimonials-scroll {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-
-  .testimonials-carousel {
-    animation: testimonials-scroll 40s linear infinite;
-    width: max-content;
-  }
-
-  .testimonials-carousel:hover {
-    animation-play-state: paused;
-  }
+  /* Testimonials are a static grid now (document 4.1: one instance of each),
+     so the infinite-scroll keyframes that required rendering the list twice
+     have been removed. */
 
   /* Animated gradient background */
   @keyframes gradient-x {
