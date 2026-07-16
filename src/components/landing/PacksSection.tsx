@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, X, ArrowRight, Lock } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { trackEvent, AnalyticsEvent } from "@/lib/analytics";
 
 const packs = [
   {
@@ -36,6 +37,7 @@ const packs = [
     ],
     notIncluded: [],
     cta: "Solicitar informe técnico",
+    event: "click_upgrade_400" as AnalyticsEvent,
     highlight: true,
     badge: "Más solicitado",
     note: "En la mayoría de los casos, este nivel es suficiente para tomar decisiones con claridad.",
@@ -55,6 +57,7 @@ const packs = [
     ],
     notIncluded: [],
     cta: "Necesito un informe pericial",
+    event: "click_upgrade_950" as AnalyticsEvent,
     highlight: false,
     badge: null,
   },
@@ -202,7 +205,14 @@ function PackCard({ pack, index }: { pack: typeof packs[0]; index: number }) {
             }`}
             asChild
           >
-            <Link to="/asistente">
+            <Link
+              to="/asistente"
+              onClick={() => {
+                // Conversion tracking (document 6.2/6.3). Only the paid tiers
+                // carry an event; the free tier is covered by begin_analysis.
+                if ("event" in pack && pack.event) trackEvent(pack.event);
+              }}
+            >
               <span>{pack.cta}</span>
               <ArrowRight className="h-3 w-3 lg:h-3.5 lg:w-3.5 flex-shrink-0 ml-1" />
             </Link>

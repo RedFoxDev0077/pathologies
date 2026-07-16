@@ -336,6 +336,7 @@ export function ExpedientePanel({
                   <S8AnalysisDisplay
                     analysis={s8_analysis}
                     caseId={caseId || 'SIN-ID'}
+                    expedienteId={expediente.id}
                   />
                   <div className="p-6 pt-0">
                     <Button

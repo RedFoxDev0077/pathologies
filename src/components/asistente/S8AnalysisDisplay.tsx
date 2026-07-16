@@ -1,13 +1,16 @@
 import { S8Analysis } from '@/types/expediente';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { S8UpgradeScreen } from './S8UpgradeScreen';
 
 interface S8AnalysisDisplayProps {
   analysis: S8Analysis;
   caseId: string;
+  /** Internal expediente id, used to route to the report request. */
+  expedienteId?: string;
 }
 
-export function S8AnalysisDisplay({ analysis, caseId }: S8AnalysisDisplayProps) {
+export function S8AnalysisDisplay({ analysis, caseId, expedienteId }: S8AnalysisDisplayProps) {
   const blocks = [
     { key: 'block_1_identified_damage', icon: '🔍', color: 'border-l-blue-500' },
     { key: 'block_2_probable_causes', icon: '🧪', color: 'border-l-purple-500' },
@@ -17,7 +20,9 @@ export function S8AnalysisDisplay({ analysis, caseId }: S8AnalysisDisplayProps) 
   ];
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    // id is the print target: the "Descargar en PDF" CTA uses window.print(),
+    // and the @media print rules in index.css print only this subtree.
+    <div id="s8-analysis-print" className="space-y-4 p-4 md:p-6">
       {/* Case ID Badge */}
       <div className="flex items-center justify-center">
         <Badge variant="outline" className="text-sm md:text-lg px-4 md:px-6 py-1.5 md:py-2 font-mono font-bold">
@@ -70,6 +75,14 @@ export function S8AnalysisDisplay({ analysis, caseId }: S8AnalysisDisplayProps) 
           <strong>⚠️ Importante:</strong> Este es un análisis preliminar automatizado. No sustituye una inspección presencial ni un informe técnico oficial. Para un diagnóstico definitivo, solicita el informe completo revisado por un técnico cualificado.
         </p>
       </div>
+
+      {/* Upgrade screen (document 3.3 + 3.4). Lives here so it appears wherever
+          the analysis is rendered — both the desktop panel and the mobile tab. */}
+      <S8UpgradeScreen
+        analysis={analysis}
+        caseId={caseId}
+        expedienteId={expedienteId}
+      />
     </div>
   );
 }

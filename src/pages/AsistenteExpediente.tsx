@@ -276,6 +276,7 @@ export default function AsistenteExpediente() {
                     <S8AnalysisDisplay
                       analysis={expediente.s8_analysis}
                       caseId={expediente.caseId || 'SIN-ID'}
+                      expedienteId={id}
                     />
                     <div className="p-4 space-y-2">
                       <Button

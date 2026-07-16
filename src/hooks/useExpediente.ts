@@ -11,6 +11,7 @@ import {
 } from '@/types/expediente';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
 import { toast } from '@/hooks/use-toast';
+import { trackEvent } from '@/lib/analytics';
 import {
   createExpediente,
   getExpediente,
@@ -256,6 +257,9 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
       // Call backend API to create case
       const backendCase = await casaDiagAPI.createCase(perfil);
 
+      // Conversion tracking (document 6.2/6.3): the funnel starts here.
+      trackEvent('begin_analysis', { profile: perfil, case_id: backendCase?.caseId });
+
       // Sync to frontend format
       const exp = syncBackendToFrontend(backendCase);
 
@@ -408,6 +412,12 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
       // Only reload if S8 data is missing from the response
       if (response.currentState === 'S8_ANALISIS_GRATUITO') {
         console.log('[useExpediente] Detected S8 transition, merging S8 data...');
+
+        // Conversion tracking (document 6.2/6.3): the free analysis is done —
+        // this is the point the upgrade to 400 EUR is offered.
+        trackEvent('complete_analysis', {
+          case_id: response.stateData?.caseId || expediente.caseId,
+        });
 
         const updatedExp = getExpediente(expediente.id);
         if (updatedExp && response.stateData?.s8_analisis) {
