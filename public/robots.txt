@@ -1,0 +1,16 @@
+# robots.txt para Mi Casa Verde - Diagnóstico de Patologías en Vivienda
+
+User-agent: *
+Allow: /
+
+# Bloquear páginas privadas y de administración
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /asistente/expediente/
+Disallow: /asistente-expediente/
+Disallow: /asistente/pago-exitoso
+Disallow: /asistente/confirmacion
+
+# Sitemap
+Sitemap: https://patologias.micasaverde.es/sitemap.xml
