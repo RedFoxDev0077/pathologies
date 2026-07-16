@@ -52,7 +52,12 @@
       "Bash(awk '{printf \"%.1f MB  %s\\\\n\", $1/1048576, $2}')",
       "Bash(git reset *)",
       "Bash(xargs -0 du -ch)",
-      "Bash(xargs echo \"paypal files tracked:\")"
+      "Bash(xargs echo \"paypal files tracked:\")",
+      "Bash(GIT_SSH_COMMAND=\"ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=30 -o TCPKeepAlive=yes -o IPQoS=throughput\" git -c pack.threads=1 -c pack.windowMemory=64m -c core.compression=1 -c http.postBuffer=524288000 push --no-thin -u pathologies master)",
+      "Bash(git ls-tree *)",
+      "Bash(xargs echo \"private files on remote:\")",
+      "Bash(git diff *)",
+      "Bash(GIT_SSH_COMMAND=\"ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=30\" git push pathologies master)"
     ],
     "additionalDirectories": [
       "f:\\workana_work\\Francisco\\casadiag\\.github"
