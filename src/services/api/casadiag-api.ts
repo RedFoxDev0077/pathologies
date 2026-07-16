@@ -321,6 +321,38 @@ class CasaDiagAPI {
     return response.data;
   }
 
+  // ---- Guest access (temporary read-only invitations) ----
+
+  /** List invitations + how many are currently active. */
+  async getGuestInvites(): Promise<{ invites: GuestInvite[]; activeCount: number }> {
+    const response = await this.client.get('/admin/guests');
+    return response.data;
+  }
+
+  /**
+   * Create an invitation. The raw token comes back exactly once — it is not
+   * recoverable afterwards, so the caller must show it to the owner immediately.
+   */
+  async createGuestInvite(
+    label: string,
+    expiry: GuestExpiry,
+  ): Promise<{ invite: GuestInvite; token: string }> {
+    const response = await this.client.post('/admin/guests', { label, expiry });
+    return response.data;
+  }
+
+  /** Revoke an invitation; the guest's session dies on their next request. */
+  async revokeGuestInvite(id: string): Promise<{ success: boolean; invite: GuestInvite }> {
+    const response = await this.client.delete(`/admin/guests/${id}`);
+    return response.data;
+  }
+
+  /** Exchange an invitation token for a read-only session (public endpoint). */
+  async redeemGuestInvite(token: string) {
+    const response = await this.client.post('/auth/guest/redeem', { token });
+    return response.data;
+  }
+
   /**
    * Get pending cases for review
    */
@@ -552,6 +584,18 @@ export interface Payment {
   authorizedAt?: string;
   capturedAt?: string;
   createdAt: string;
+}
+
+export type GuestExpiry = '7d' | '30d' | 'unlimited';
+
+export interface GuestInvite {
+  id: string;
+  label: string;
+  status: 'active' | 'revoked' | 'expired';
+  createdAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
 }
 
 export interface Diagnosis {

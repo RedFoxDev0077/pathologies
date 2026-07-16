@@ -16,9 +16,10 @@ import { toast } from '@/hooks/use-toast';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
 import {
   BarChart, FileText, Clock, CheckCircle, AlertTriangle, MoreVertical,
-  Download, Upload, Send, History, Eye, Filter, Search, Images, X, Globe, Trash2
+  Download, Upload, Send, History, Eye, Filter, Search, Images, X, Globe, Trash2, UserCog
 } from 'lucide-react';
 import { LandingPageEditor } from '@/components/admin/LandingPageEditor';
+import { GuestAccessPanel } from '@/components/admin/GuestAccessPanel';
 import { Evidence } from '@/services/api/casadiag-api';
 
 interface DashboardStats {
@@ -392,6 +393,10 @@ export default function Admin() {
                 <Globe className="h-4 w-4 mr-1.5" />
                 Páginas SEO
               </TabsTrigger>
+              <TabsTrigger value="guests">
+                <UserCog className="h-4 w-4 mr-1.5" />
+                Accesos de invitado
+              </TabsTrigger>
             </TabsList>
 
             {/* SEO Pages Editor - standalone tab */}
@@ -401,6 +406,17 @@ export default function Admin() {
               </TabsContent>
             )}
 
+            {/* Temporary read-only guest access - standalone tab */}
+            {activeTab === 'guests' && (
+              <TabsContent value="guests" className="mt-4">
+                <GuestAccessPanel />
+              </TabsContent>
+            )}
+
+            {/* Case list. Guarded because <TabsContent value={activeTab}> matches
+                whatever tab is active, so without this it also renders underneath
+                the standalone tabs above. */}
+            {!['seo-pages', 'guests'].includes(activeTab) && (
             <TabsContent value={activeTab} className="space-y-4">
               {/* Filters */}
               <div className="flex gap-4 items-end">
@@ -607,6 +623,7 @@ export default function Admin() {
                 </>
               )}
             </TabsContent>
+            )}
           </Tabs>
         </CardContent>
       </Card>

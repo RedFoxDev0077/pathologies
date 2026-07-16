@@ -31,6 +31,7 @@ const Cookies = lazy(() => import("./pages/Cookies"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const InformePublico = lazy(() => import("./pages/InformePublico"));
+const InvitadoAcceso = lazy(() => import("./pages/InvitadoAcceso"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Page loading fallback
@@ -135,6 +136,8 @@ const App = () => (
                     }
                   />
                   <Route path="/informe/:caseId" element={<InformePublico />} />
+                  {/* Guest invitation link: redeems a one-time token for read-only access */}
+                  <Route path="/invitado/:token" element={<InvitadoAcceso />} />
                   <Route path="/privacidad" element={<Privacidad />} />
                   <Route path="/aviso-legal" element={<AvisoLegal />} />
                   <Route path="/cookies" element={<Cookies />} />
