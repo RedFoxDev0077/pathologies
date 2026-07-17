@@ -321,6 +321,15 @@ class CasaDiagAPI {
     return response.data;
   }
 
+  /**
+   * Mark a case as saved for later, enabling the 24h follow-up email.
+   * Best-effort: the UI still copies the link even if this fails.
+   */
+  async saveCaseForLater(caseId: string): Promise<{ success: boolean }> {
+    const response = await this.client.post(`/cases/${caseId}/save-for-later`);
+    return response.data;
+  }
+
   // ---- Guest access (temporary read-only invitations) ----
 
   /** List invitations + how many are currently active. */

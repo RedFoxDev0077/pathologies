@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { S8Analysis } from '@/types/expediente';
+import { casaDiagAPI } from '@/services/api/casadiag-api';
 import { trackEvent } from '@/lib/analytics';
 import { Check, Download, Bookmark, ShieldCheck, Phone } from 'lucide-react';
 
@@ -71,6 +72,15 @@ export function S8UpgradeScreen({ analysis, expedienteId, caseId }: S8UpgradeScr
 
   const handleSaveForLater = async () => {
     trackEvent('save_for_later', { case_id: caseId });
+
+    // Tell the backend, so the 24h reminder (document 6.4) can fire. Best-effort:
+    // never block the user's copy-link on this.
+    try {
+      await casaDiagAPI.saveCaseForLater(expedienteId || caseId);
+    } catch {
+      /* reminder is a nice-to-have; the link below still works */
+    }
+
     const url = `${window.location.origin}/asistente/expediente/${expedienteId || caseId}`;
     try {
       await navigator.clipboard.writeText(url);
