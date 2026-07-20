@@ -11,7 +11,7 @@ export const faqData: FAQItem[] = [
   {
     id: "pricing",
     keywords: ["precio", "coste", "cuánto", "cuesta", "tarifa", "vale"],
-    answer: "El análisis preliminar es completamente gratuito. Si necesitas un informe técnico firmado, el precio es de 90 euros más IVA. Para casos que requieren un informe pericial completo, el coste es de 850 euros más IVA.",
+    answer: "El análisis técnico orientativo con el asistente es completamente gratuito. Si necesitas un informe técnico firmado por arquitecto colegiado, el Informe Técnico Online cuesta 400 euros más IVA e incluye el análisis de tus fotos y vídeos, una consulta telefónica y el informe en PDF. Para casos que requieren inspección presencial y documentación pericial completa, el Informe Pericial Presencial cuesta 950 euros más IVA. Si además necesitas el proyecto de reparación, partimos de 2.000 euros más IVA.",
     category: "pricing",
   },
   {
