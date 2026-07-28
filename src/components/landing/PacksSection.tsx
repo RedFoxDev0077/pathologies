@@ -249,6 +249,10 @@ export function PacksSection() {
             Un proceso guiado, claro y sin compromiso. Analiza tu caso paso a paso
             y decide hasta dónde llegar según tu situación real.
           </p>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-semibold text-primary">
+            Todo empieza con el análisis <span className="font-bold">GRATIS</span>.
+            Solo pasas a un servicio de pago si tu caso realmente lo necesita.
+          </p>
         </div>
 
         {/* Important note */}

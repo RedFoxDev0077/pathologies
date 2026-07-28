@@ -26,12 +26,12 @@ export function Footer() {
           {/* Phone */}
           <a
             href="tel:+34634278435"
-            className={`flex items-center gap-2 text-base font-semibold text-foreground transition-all duration-500 hover:text-primary ${
+            className={`flex items-center gap-2.5 rounded-full bg-primary/10 px-5 py-2.5 text-xl md:text-2xl font-bold text-primary transition-all duration-500 hover:bg-primary/15 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
             style={{ transitionDelay: "50ms" }}
           >
-            <Phone className="h-4 w-4 text-primary" />
+            <Phone className="h-6 w-6 text-primary" />
             634 278 435
           </a>
 

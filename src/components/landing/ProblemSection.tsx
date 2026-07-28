@@ -1,25 +1,32 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Users, PhoneCall, AlertTriangle, ArrowRight } from "lucide-react";
+import { Users, PhoneCall, AlertTriangle, Award, FileSignature, FolderCheck } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 // Three balanced cards with equal copy lengths for visual balance
 const problems = [
   {
     icon: Users,
-    title: "No sé si es grave",
+    title: "No sé qué pasa",
     description: "¿Es solo estético o un problema estructural?",
   },
   {
     icon: PhoneCall,
-    title: "No sé a quién llamar",
+    title: "No sé si es grave",
     description: "Necesito saber qué pasa antes de gastar",
   },
   {
     icon: AlertTriangle,
-    title: "No sé si va a empeorar",
+    title: "No sé qué hacer ahora",
     description: "El tiempo puede jugar a favor... o en contra",
   },
+];
+
+// Credentials, one small icon per line (client request p.2)
+const credentials = [
+  { icon: Award, text: "Arquitecto e Ingeniero con más de 30 años de experiencia" },
+  { icon: FileSignature, text: "Informes técnicos firmados" },
+  { icon: FolderCheck, text: "Casos reales" },
 ];
 
 export function ProblemSection() {
@@ -44,8 +51,8 @@ export function ProblemSection() {
           }`}
         >
           <div className="bg-accent/50 border border-border rounded-lg px-6 py-4 text-center">
-            <p className="text-sm md:text-base text-muted-foreground italic">
-              "Cuándo aparece un problema en casa, lo más difícil no es arreglarlo, si no saber qué está pasando de verdad"
+            <p className="text-base md:text-lg text-foreground font-medium">
+              Antes de gastar dinero en una reparación, descubre cuál es el verdadero problema.
             </p>
           </div>
         </div>
@@ -58,13 +65,13 @@ export function ProblemSection() {
           style={{ transitionDelay: "100ms" }}
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">
-            ¡TE DAMOS CLARIDAD TÉCNICA!
+            ¡DESCUBRE QUÉ LE PASA REALMENTE A TU VIVIENDA!
           </h2>
           <h3 className="text-xl md:text-2xl font-semibold text-foreground/90 mb-4">
             Antes de que tomes una decisión
           </h3>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Nuestro sistema analiza tu caso y te proporciona orientación profesional
+            Un arquitecto colegiado analiza tu caso antes de que tomes una decisión
           </p>
           <p className="text-foreground font-medium mt-2">
             ¡El PROCESO TE GUÍA!,{" "}
@@ -122,15 +129,20 @@ export function ProblemSection() {
             ctaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          {/* Authority Text */}
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">
-              Revisado por arquitecto/ingeniero colegiado.
-            </p>
-            <p className="text-sm text-foreground font-medium">
-              Informes técnicos reales <strong className="text-primary">NO genéricos</strong>
-            </p>
+          {/* Credentials — one small icon per line (client request p.2) */}
+          <div className="mb-6 inline-flex flex-col items-start gap-2.5 rounded-xl border border-border bg-card px-5 py-4 text-left mx-auto">
+            {credentials.map((c, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <c.icon className="h-4 w-4 text-primary" />
+                </span>
+                <span className="text-sm font-medium text-foreground">{c.text}</span>
+              </div>
+            ))}
           </div>
+          <p className="mb-6 text-sm text-foreground font-medium">
+            Informes técnicos reales <strong className="text-primary">NO genéricos</strong>
+          </p>
 
           {/* CTA Button - Two Lines */}
           <Button

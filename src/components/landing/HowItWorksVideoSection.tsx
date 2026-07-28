@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Camera, Cog, FileText, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
 
@@ -22,14 +22,19 @@ const steps = [
     id: 3,
     icon: FileText,
     title: "Recibes tu diagnóstico",
-    description: "Pre-diagnóstico gratuito en pantalla. Si necesitas un documento firmado con propuesta de actuación y estimación económica, solicita tu informe técnico online.",
+    description:
+      "Pre-diagnóstico gratuito en pantalla. Si necesitas un documento firmado con propuesta de actuación y estimación económica, solicita tu informe técnico online.",
   },
 ];
 
 export function HowItWorksVideoSection() {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // The 37 MB avatar video only downloads once the visitor presses play.
+  const [started, setStarted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  // -1 until playback starts; then 0,1,2 as the avatar narrates each step.
+  const [activeStep, setActiveStep] = useState(-1);
 
   const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation<HTMLDivElement>({
     threshold: 0.3,
@@ -38,7 +43,22 @@ export function HowItWorksVideoSection() {
     threshold: 0.2,
   });
 
+  const start = async () => {
+    setStarted(true);
+    // Wait a tick for the <video> to mount, then play.
+    requestAnimationFrame(async () => {
+      if (!videoRef.current) return;
+      try {
+        await videoRef.current.play();
+        setIsPlaying(true);
+      } catch {
+        /* autoplay blocked; the poster/controls remain */
+      }
+    });
+  };
+
   const togglePlay = async () => {
+    if (!started) return start();
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
@@ -57,6 +77,18 @@ export function HowItWorksVideoSection() {
     setIsMuted(!isMuted);
   };
 
+  // Light up the step that matches the current point in the narration.
+  // Splitting the duration into equal thirds means it adapts to whatever the
+  // final video length is; the exact cue points can be fine-tuned later if
+  // José sends the timestamps at which he names each step.
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration || Number.isNaN(v.duration)) return;
+    const progress = v.currentTime / v.duration;
+    const idx = Math.min(steps.length - 1, Math.floor(progress * steps.length));
+    if (idx !== activeStep) setActiveStep(idx);
+  };
+
   return (
     <section id="como-funciona" className="section">
       <div className="container">
@@ -68,9 +100,9 @@ export function HowItWorksVideoSection() {
             headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
         >
-          <h2 className="section-title">¿Cómo funciona el diagnóstico?</h2>
+          <h2 className="section-title">¿Cómo descubrir qué le ocurre realmente a tu vivienda?</h2>
           <p className="section-subtitle">
-            Un proceso guiado, sencillo y sin compromiso.
+            En menos de 5 minutos tendrás una primera orientación técnica gratuita.
             <br />
             <span className="font-medium text-foreground">Pulsa play y nuestro asistente te explica</span>
           </p>
@@ -86,25 +118,43 @@ export function HowItWorksVideoSection() {
         >
           <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
 
-            {/* LEFT — Video (rectangular) */}
+            {/* LEFT — Avatar video */}
             <div className="flex flex-col items-center">
-              <div className="relative w-full overflow-hidden rounded-xl border-2 border-border shadow-2xl shadow-primary/10">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  loop
-                  className="w-full h-auto"
-                  onClick={togglePlay}
-                >
-                  <source src="/videos/how-it-works.mp4" type="video/mp4" />
-                </video>
+              <div className="relative w-full overflow-hidden rounded-xl border-2 border-border shadow-2xl shadow-primary/10 bg-muted aspect-[4/3]">
+                {started ? (
+                  <video
+                    ref={videoRef}
+                    playsInline
+                    preload="auto"
+                    className="w-full h-full object-cover"
+                    onClick={togglePlay}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => {
+                      setIsPlaying(false);
+                      setActiveStep(-1);
+                    }}
+                    onTimeUpdate={handleTimeUpdate}
+                  >
+                    <source src="/videos/avatar-how-it-works.mp4" type="video/mp4" />
+                  </video>
+                ) : (
+                  /* Poster placeholder — no bytes downloaded until play is pressed */
+                  <button
+                    onClick={start}
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group"
+                    aria-label="Reproducir vídeo"
+                  >
+                    <span className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30 transition-transform duration-300 group-hover:scale-110">
+                      <Play className="h-9 w-9 text-white ml-1" />
+                    </span>
+                  </button>
+                )}
 
-                {/* Play overlay when paused */}
-                {!isPlaying && (
+                {/* Play overlay when paused mid-video */}
+                {started && !isPlaying && (
                   <div
-                    className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer transition-opacity duration-300"
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
                     onClick={togglePlay}
                   >
                     <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
@@ -116,12 +166,7 @@ export function HowItWorksVideoSection() {
 
               {/* Controls */}
               <div className="flex items-center gap-3 mt-6">
-                <Button
-                  variant="default"
-                  size="lg"
-                  onClick={togglePlay}
-                  className="rounded-full h-12 px-6 gap-2"
-                >
+                <Button variant="default" size="lg" onClick={togglePlay} className="rounded-full h-12 px-6 gap-2">
                   {isPlaying ? (
                     <>
                       <Pause className="h-5 w-5" />
@@ -139,6 +184,7 @@ export function HowItWorksVideoSection() {
                   variant="outline"
                   size="icon"
                   onClick={toggleMute}
+                  disabled={!started}
                   className="rounded-full h-12 w-12"
                 >
                   {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
@@ -146,21 +192,37 @@ export function HowItWorksVideoSection() {
               </div>
             </div>
 
-            {/* RIGHT — Steps */}
+            {/* RIGHT — Steps (light up as the avatar narrates) */}
             <div className="space-y-4">
-              {steps.map((step) => {
+              {steps.map((step, index) => {
                 const StepIcon = step.icon;
+                const active = index === activeStep;
                 return (
                   <div
                     key={step.id}
-                    className="relative p-5 md:p-6 rounded-xl border-2 bg-card border-border hover:border-primary/20 transition-all duration-500"
+                    className={cn(
+                      "relative p-5 md:p-6 rounded-xl border-2 bg-card transition-all duration-500",
+                      active
+                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/20 scale-[1.02]"
+                        : "border-border hover:border-primary/20"
+                    )}
                   >
                     <div className="flex items-center gap-4 mb-3">
-                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted text-muted-foreground">
-                        <span className="text-lg font-bold">{step.id}</span>
+                      <div
+                        className={cn(
+                          "flex items-center justify-center w-14 h-14 rounded-full transition-colors duration-500",
+                          active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        <span className="text-xl font-bold">{step.id}</span>
                       </div>
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted/50 text-muted-foreground">
-                        <StepIcon className="h-5 w-5" />
+                      <div
+                        className={cn(
+                          "flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-500",
+                          active ? "bg-primary/15 text-primary" : "bg-muted/50 text-muted-foreground"
+                        )}
+                      >
+                        <StepIcon className="h-6 w-6" />
                       </div>
                     </div>
                     <h3 className="text-lg font-bold mb-2">{step.title}</h3>

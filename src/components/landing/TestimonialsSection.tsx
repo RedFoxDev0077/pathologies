@@ -1,4 +1,4 @@
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, BadgeCheck } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 /**
@@ -129,8 +129,9 @@ function TestimonialCard({
           {testimonial.initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">
+          <p className="flex items-center gap-1 truncate text-sm font-semibold text-foreground">
             {testimonial.name}
+            <BadgeCheck className="h-4 w-4 flex-shrink-0 text-primary" aria-label="Cliente de Mi Casa Verde" />
           </p>
           <p className="truncate text-xs text-muted-foreground">{testimonial.role}</p>
         </div>
@@ -160,10 +161,14 @@ export function TestimonialsSection() {
             headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
+          <span className="mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <BadgeCheck className="h-4 w-4" />
+            Opiniones de clientes reales
+          </span>
           <h2 className="section-title">Lo que dicen nuestros clientes</h2>
           <p className="section-subtitle">
-            Opiniones de propietarios, administradores y profesionales que han
-            confiado en nuestro servicio
+            Propietarios, administradores de fincas y profesionales que han
+            confiado en nuestro servicio para tomar decisiones con seguridad
           </p>
         </div>
 

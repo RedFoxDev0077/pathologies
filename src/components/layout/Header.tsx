@@ -74,14 +74,14 @@ export function Header() {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href={`tel:${CONTACT_PHONE_TEL}`}
-              className={`flex items-center gap-1.5 text-sm font-semibold transition-colors duration-200 hover:text-primary ${
+              className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-base font-bold transition-all duration-200 ${
                 isScrolled
-                  ? "text-foreground hover:text-primary"
-                  : "text-white hover:text-white/90 hero-text-shadow-sm"
+                  ? "text-primary hover:bg-primary/10"
+                  : "text-white hover:bg-white/15 hero-text-shadow-sm ring-1 ring-white/30"
               }`}
               aria-label="Llamar por teléfono"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-5 w-5" />
               {CONTACT_PHONE_DISPLAY}
             </a>
             <ThemeToggle />
