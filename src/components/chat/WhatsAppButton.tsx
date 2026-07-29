@@ -30,8 +30,8 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       className={`fixed z-50 flex items-center gap-2.5 rounded-full shadow-lg transition-all duration-500 focus:outline-none hover:scale-[1.03]
-        bottom-24 right-4 px-4 py-3
-        lg:bottom-24 lg:right-6
+        right-4 lg:right-6 px-4 py-3
+        bottom-44 lg:bottom-6
         ${isVisible ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"}
       `}
       style={{ backgroundColor: "#25D366" }}

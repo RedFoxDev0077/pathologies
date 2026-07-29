@@ -29,8 +29,6 @@ const steps = [
 
 export function HowItWorksVideoSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  // The 37 MB avatar video only downloads once the visitor presses play.
-  const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   // -1 until playback starts; then 0,1,2 as the avatar narrates each step.
@@ -43,22 +41,7 @@ export function HowItWorksVideoSection() {
     threshold: 0.2,
   });
 
-  const start = async () => {
-    setStarted(true);
-    // Wait a tick for the <video> to mount, then play.
-    requestAnimationFrame(async () => {
-      if (!videoRef.current) return;
-      try {
-        await videoRef.current.play();
-        setIsPlaying(true);
-      } catch {
-        /* autoplay blocked; the poster/controls remain */
-      }
-    });
-  };
-
   const togglePlay = async () => {
-    if (!started) return start();
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
@@ -120,47 +103,41 @@ export function HowItWorksVideoSection() {
 
             {/* LEFT — Avatar video */}
             <div className="flex flex-col items-center">
-              <div className="relative w-full overflow-hidden rounded-xl border-2 border-border shadow-2xl shadow-primary/10 bg-muted aspect-[4/3]">
-                {started ? (
-                  <video
-                    ref={videoRef}
-                    playsInline
-                    preload="auto"
-                    className="w-full h-full object-cover"
-                    onClick={togglePlay}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => {
-                      setIsPlaying(false);
-                      setActiveStep(-1);
-                    }}
-                    onTimeUpdate={handleTimeUpdate}
-                  >
-                    <source src="/videos/avatar-how-it-works.mp4" type="video/mp4" />
-                  </video>
-                ) : (
-                  /* Poster placeholder — no bytes downloaded until play is pressed */
+              {/* Native aspect is 9:16 (1080x1920). Match it so the avatar is
+                  never cropped, and cap the width so a portrait clip does not
+                  dominate the layout — it scales down fluidly on small screens. */}
+              <div className="relative mx-auto w-full max-w-[280px] sm:max-w-[320px] aspect-[9/16] overflow-hidden rounded-xl border-2 border-border shadow-2xl shadow-primary/10 bg-muted">
+                {/* preload="metadata" shows the first frame (the avatar) as a
+                    natural poster without downloading the full 37 MB; the file
+                    streams only once the visitor presses play. */}
+                <video
+                  ref={videoRef}
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  onClick={togglePlay}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    setIsPlaying(false);
+                    setActiveStep(-1);
+                  }}
+                  onTimeUpdate={handleTimeUpdate}
+                >
+                  <source src="/videos/avatar-how-it-works.mp4#t=0.1" type="video/mp4" />
+                </video>
+
+                {/* Play overlay while paused */}
+                {!isPlaying && (
                   <button
-                    onClick={start}
-                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group"
+                    onClick={togglePlay}
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors hover:bg-black/40 group"
                     aria-label="Reproducir vídeo"
                   >
                     <span className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30 transition-transform duration-300 group-hover:scale-110">
                       <Play className="h-9 w-9 text-white ml-1" />
                     </span>
                   </button>
-                )}
-
-                {/* Play overlay when paused mid-video */}
-                {started && !isPlaying && (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
-                    onClick={togglePlay}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
-                      <Play className="h-8 w-8 text-white ml-1" />
-                    </div>
-                  </div>
                 )}
               </div>
 

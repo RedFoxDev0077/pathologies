@@ -14,7 +14,6 @@ import { TransparencySection } from "@/components/landing/TransparencySection";
 import { HowItWorksVideoSection } from "@/components/landing/HowItWorksVideoSection";
 import { MobileStickyCta } from "@/components/landing/MobileStickyCta";
 
-const FloatingCtaIcon = lazy(() => import("@/components/landing/FloatingCtaIcon").then(m => ({ default: m.FloatingCtaIcon })));
 const ChatContainer = lazy(() => import("@/components/chat").then(m => ({ default: m.ChatContainer })));
 const FAQSection = lazy(() => import("@/components/landing/FAQSection").then(m => ({ default: m.FAQSection })));
 
@@ -128,8 +127,11 @@ const Index = () => {
         </main>
         <Footer />
 
+        {/* Two clear floating affordances only: the AI chat (ChatContainer) and
+            the WhatsApp pill (rendered globally). The old sparkle "Analizar mi
+            caso" FAB was removed — it overlapped the cluster and duplicated the
+            header CTA and the sticky mobile bar. */}
         <Suspense fallback={null}>
-          <FloatingCtaIcon />
           <ChatContainer />
         </Suspense>
 
