@@ -161,7 +161,6 @@ export function HowItWorksVideoSection() {
                   variant="outline"
                   size="icon"
                   onClick={toggleMute}
-                  disabled={!started}
                   className="rounded-full h-12 w-12"
                 >
                   {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
