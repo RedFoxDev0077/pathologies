@@ -36,3 +36,7 @@ vps-backup/
 
 # Private financial documents - never commit
 test/
+
+# Client-provided input material (video already integrated into public/videos)
+feedback/
+Cambios_Landing_MiCasaVerde_Corregido.pdf

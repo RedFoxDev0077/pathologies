@@ -57,7 +57,26 @@
       "Bash(git ls-tree *)",
       "Bash(xargs echo \"private files on remote:\")",
       "Bash(git diff *)",
-      "Bash(GIT_SSH_COMMAND=\"ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=30\" git push pathologies master)"
+      "Bash(GIT_SSH_COMMAND=\"ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=30\" git push pathologies master)",
+      "Bash(curl -s -o /dev/null -w \"https://patologias.micasaverde.es/ -> HTTP %{http_code}\\\\n\" --max-time 25 https://patologias.micasaverde.es/)",
+      "Bash(curl -s -o /dev/null -w \"/api/cases -> HTTP %{http_code}\\\\n\" --max-time 25 https://patologias.micasaverde.es/api/cases)",
+      "Bash(curl -s --max-time 20 https://patologias.micasaverde.es/)",
+      "Bash(ssh -o StrictHostKeyChecking=no -o BatchMode=yes root@91.98.167.120 \"ls -ld /var/www/casadiag/dist && stat -c '%U:%G' /var/www/casadiag/dist/index.html\")",
+      "Bash(cp src/components/admin/LandingPageEditor.tsx /tmp/lpe.bak)",
+      "Bash(sed -i -e 's/desde 90€ + IVA/desde 400€ + IVA/g' -e 's/Desde 90€/Desde 400€ + IVA/g' -e 's/desde 90€/desde 400€ + IVA/g' src/components/admin/LandingPageEditor.tsx)",
+      "Bash(grep -oE \"Un informe [^']{0,60}entre [0-9.]+€\" src/components/admin/LandingPageEditor.tsx)",
+      "Bash(xargs echo \"  corrupt chars:\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -o BatchMode=yes root@91.98.167.120 \"stat -c '%y' /var/www/casadiag/dist/index.html\")",
+      "Bash(xargs echo \"baseline mtime:\")",
+      "Bash(node -p \"require\\('./node_modules/prisma/package.json'\\).version\")",
+      "Bash(node -p \"require\\('./node_modules/@prisma/client/package.json'\\).version\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -o BatchMode=yes root@91.98.167.120 \"mkdir -p /mnt/volume-nbg1-1/casadiag/casadiag-backend/src/guest/dto && cp -r /mnt/volume-nbg1-1/casadiag/casadiag-backend/dist /mnt/volume-nbg1-1/casadiag/dist.bak.$\\(date +%s\\) && echo 'dist backed up'\")",
+      "Bash(PYTHONIOENCODING=utf-8 python deploy_backend_guest.py)",
+      "Bash(cp vps-backup/schema.prisma casadiag-backend/prisma/schema.prisma)",
+      "Bash(sed -n '/generator client/,/}/p;/datasource db/,/}/p' casadiag-backend/prisma/schema.prisma)",
+      "Bash(xargs echo \"GUEST refs:\")",
+      "Bash(scp -o StrictHostKeyChecking=no -o BatchMode=yes -q prisma/schema.prisma root@91.98.167.120:/mnt/volume-nbg1-1/casadiag/casadiag-backend/prisma/)",
+      "Bash(scp -o StrictHostKeyChecking=no -o BatchMode=yes -q scripts/seed-admin.js root@91.98.167.120:/mnt/volume-nbg1-1/casadiag/casadiag-backend/scripts/)"
     ],
     "additionalDirectories": [
       "f:\\workana_work\\Francisco\\casadiag\\.github"
