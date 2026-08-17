@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -57,6 +57,13 @@ export function S8UpgradeScreen({ analysis, expedienteId, caseId }: S8UpgradeScr
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
   const severity = detectSeverity(analysis);
+
+  // Step 5. Without an impression event the click-through rate on the offer is
+  // unknowable — we would see clicks but not how many people saw it. Severity
+  // rides along so the personalised copy (doc 3.4) can be evaluated too.
+  useEffect(() => {
+    trackEvent('view_offer', { case_id: caseId, severity });
+  }, [caseId, severity]);
 
   const handleUpgrade = () => {
     trackEvent('click_upgrade_400', { case_id: caseId, severity });

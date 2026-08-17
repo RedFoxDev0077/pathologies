@@ -7,6 +7,7 @@ import {
   Evidence,
   Prediagnostico,
   PackType,
+  PACKS,
   canAdvanceToState,
 } from '@/types/expediente';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
@@ -174,6 +175,10 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Last state reported to analytics, so resuming a case or re-rendering does
+  // not emit duplicate diagnostic_step events.
+  const lastTrackedStateRef = useRef<ExpedienteState | null>(null);
+
   const loadExpediente = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
@@ -223,6 +228,10 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
         uploadedAt: new Date(ev.uploadedAt),
         visionAnalysis: ev.visionAnalysis,
       }));
+
+      // Resuming an existing case is not progress through the funnel — seed the
+      // tracker so the first real transition is what gets reported.
+      lastTrackedStateRef.current = exp.estado;
 
       // Save to localStorage for future use
       saveExpediente(exp);
@@ -365,6 +374,19 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
           const mappedState = mapBackendState(response.currentState);
           console.log('[useExpediente] Mapped estado:', mappedState);
           updatedExp.estado = mappedState;
+
+          // One event per conversational state (S0..S7B). This is what turns the
+          // chat from a black box into a measurable funnel: without it we only
+          // know how many people started and how many finished, not where the
+          // rest stopped. Fired only on a genuine transition.
+          if (mappedState && mappedState !== lastTrackedStateRef.current) {
+            lastTrackedStateRef.current = mappedState;
+            trackEvent('diagnostic_step', {
+              step: mappedState,
+              case_id: updatedExp.caseId || expediente.caseId,
+              profile: updatedExp.perfil,
+            });
+          }
 
           // Update S8 analysis if available in response
           if (response.stateData?.s8_analisis) {
@@ -577,6 +599,17 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
               updatedExp.evidencias[evidenceIndex].validated = true;
               updatedExp.evidencias[evidenceIndex].validationError = undefined;
 
+              // S5 requires at least one photo, so uploading is mandatory
+              // friction and a likely abandonment point. Track the successful
+              // ones with a running count to see how many stall at zero.
+              trackEvent('evidence_uploaded', {
+                evidence_type: type,
+                case_id: updatedExp.caseId,
+                total_validated: updatedExp.evidencias.filter(
+                  (e) => e.status === 'completed' && e.validated
+                ).length,
+              });
+
               // Type-specific success messages
               const successMessages = {
                 photo: {
@@ -719,7 +752,10 @@ export const useExpediente = (expedienteId?: string): UseExpedienteReturn => {
         const exp = getExpediente(expediente.id);
         if (exp) {
           exp.prediagnostico = prediagnostico;
-          exp.estado = ExpedienteState.S3_PREDIAGNOSTICO;
+          // Previously assigned ExpedienteState.S3_PREDIAGNOSTICO, a state that
+          // no longer exists in the enum — at runtime that wrote `undefined`
+          // over the case's state. The backend owns state transitions now, so
+          // this legacy path must not touch `estado` at all.
           saveExpediente(exp);
 
           // Add assistant message
@@ -780,22 +816,19 @@ Si deseas un informe técnico revisado por un profesional, puedes seleccionar un
 
     expediente.packSeleccionado = packId;
 
-    if (packId === 'orientacion') {
-      // Free pack - stay at S4
-      addMessage(expediente.id, {
-        role: 'assistant',
-        content: 'Has seleccionado la orientación preliminar gratuita. Ya dispones del prediagnóstico en pantalla con las hipótesis, posibles causas y próximos pasos recomendados.',
-      });
-    } else {
-      // Paid pack - advance to S5
-      expediente.estado = ExpedienteState.S5_PAGO_AUTORIZACION;
-      addMessage(expediente.id, {
-        role: 'assistant',
-        content: `Has seleccionado el pack "${packId === 'informe' ? 'Informe técnico revisado' : 'Prioridad / Segunda opinión'}". 
+    // There is a single pack now (informe_preliminar_remoto). The old branches
+    // compared against 'orientacion' / 'informe', which are not members of
+    // PackType, so neither could ever match and the paid branch assigned the
+    // removed S5_PAGO_AUTORIZACION state — writing `undefined` over `estado`.
+    expediente.estado = ExpedienteState.PAYMENT_PENDING;
 
-Para continuar, necesitamos autorizar el pago. Recuerda: se autoriza ahora, pero el cargo solo se realiza cuando el informe haya sido revisado y enviado.`,
-      });
-    }
+    const pack = PACKS.find((p) => p.id === packId);
+    addMessage(expediente.id, {
+      role: 'assistant',
+      content: `Has seleccionado "${pack?.nombre ?? packId}".
+
+Para continuar, necesitamos completar el pago. El cargo solo se realiza cuando el informe ha sido revisado y enviado.`,
+    });
 
     saveExpediente(expediente);
     setExpediente(getExpediente(expediente.id));

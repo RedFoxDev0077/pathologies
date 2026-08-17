@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, Clock, FileText, Shield, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
+import { trackEvent } from '@/lib/analytics';
 
 export default function InformeCompleto() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -31,8 +32,11 @@ export default function InformeCompleto() {
     const loadCase = async () => {
       if (!caseId) return;
       try {
+        // casaDiagAPI.get() already returns response.data — reading .data again
+        // yielded undefined, which is why the risk badge and the prefilled
+        // email never appeared.
         const response = await casaDiagAPI.get(`/cases/${caseId}`);
-        setCaseData(response.data);
+        setCaseData(response);
       } catch (error) {
         console.error('Error loading case:', error);
       } finally {
@@ -44,6 +48,11 @@ export default function InformeCompleto() {
   }, [caseId]);
 
   const handleSolicitarInforme = () => {
+    // Step 7a. The data form opens here. Paired with checkout_submitted below,
+    // the gap between the two events measures abandonment on the DNI / address
+    // / phone form specifically, rather than blaming the payment page for it.
+    trackEvent('begin_checkout', { case_id: caseData?.caseId || caseId });
+
     // Always show AuthCheckpoint to collect case data (DNI, address, phone)
     // even for already-authenticated users — required for the informe
     setShowAuthCheckpoint(true);
@@ -62,6 +71,17 @@ export default function InformeCompleto() {
       const response = await casaDiagAPI.createPaymentIntent(caseId, 'informe_preliminar_remoto');
 
       if (response.paymentUrl) {
+        // Step 7b. Last event we control before handing off to the payment
+        // provider — anything lost after this is the provider's page, not ours.
+        trackEvent('checkout_submitted', {
+          case_id: caseData?.caseId || caseId,
+          value:
+            typeof response.totalAmount === 'number'
+              ? response.totalAmount / 100
+              : undefined,
+          currency: 'EUR',
+        });
+
         // Redirect to Stripe
         window.location.href = response.paymentUrl;
       }

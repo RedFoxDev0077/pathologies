@@ -130,7 +130,7 @@ export function HeroSection() {
               className="h-auto py-3 px-8 flex-col gap-0.5 rounded-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-[1.02]"
               asChild
             >
-              <Link to="/asistente">
+              <Link to="/asistente" data-cta="hero_desktop">
                 <span className="text-base font-semibold">Analiza tu caso Ahora</span>
                 <span className="text-sm font-bold">¡ES GRATIS!</span>
               </Link>
@@ -176,7 +176,7 @@ export function HeroSection() {
             className="w-full h-auto py-3 flex-col gap-0.5 rounded-lg shadow-lg shadow-primary/30"
             asChild
           >
-            <Link to="/asistente">
+            <Link to="/asistente" data-cta="hero_mobile">
               <span className="text-base font-semibold">Analiza tu caso Ahora</span>
               <span className="text-sm font-bold">¡ES GRATIS!</span>
             </Link>

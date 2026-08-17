@@ -34,8 +34,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Vite inlines VITE_* at build time, so these must be present HERE — not on
+      # the server. Without this block every analytics id compiles to `undefined`
+      # and no conversion is ever recorded, which is exactly what was happening.
+      # These values ship inside the public bundle, so they are repository
+      # Variables, not Secrets.
       - name: Build
         run: npm run build
+        env:
+          VITE_GA4_ID: ${{ vars.VITE_GA4_ID }}
+          VITE_ADS_CONV_BEGIN_ANALYSIS: ${{ vars.VITE_ADS_CONV_BEGIN_ANALYSIS }}
+          VITE_ADS_CONV_COMPLETE_ANALYSIS: ${{ vars.VITE_ADS_CONV_COMPLETE_ANALYSIS }}
+          VITE_ADS_CONV_UPGRADE_400: ${{ vars.VITE_ADS_CONV_UPGRADE_400 }}
+          VITE_ADS_CONV_UPGRADE_950: ${{ vars.VITE_ADS_CONV_UPGRADE_950 }}
+          VITE_ADS_CONV_BEGIN_CHECKOUT: ${{ vars.VITE_ADS_CONV_BEGIN_CHECKOUT }}
+          VITE_ADS_CONV_PURCHASE: ${{ vars.VITE_ADS_CONV_PURCHASE }}
+          VITE_REPORT_VALUE_EUR: ${{ vars.VITE_REPORT_VALUE_EUR }}
+
+      # Cheap guard against shipping a blank page: CI currently reports success
+      # even when the bundle fails to render (see the "Fix blank page" commit).
+      - name: Verify build output
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          grep -q 'id="root"' dist/index.html || { echo "root element missing"; exit 1; }
+          echo "build output looks sane"
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
@@ -57,3 +79,14 @@ jobs:
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
             "chown -R www-data:www-data /var/www/casadiag"
+
+      # Confirms the deploy actually serves. There is no /api/health endpoint, so
+      # the frontend root is the only meaningful target for now.
+      - name: Smoke test the live site
+        run: |
+          code=$(curl -s -o /tmp/live.html -w '%{http_code}' --max-time 30 \
+            https://patologias.micasaverde.es/)
+          echo "HTTP $code"
+          test "$code" = "200" || exit 1
+          grep -q 'id="root"' /tmp/live.html || { echo "served page has no root element"; exit 1; }
+          echo "live site OK"

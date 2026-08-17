@@ -19,7 +19,9 @@ export const createExpediente = (perfil: UserProfile): Expediente => {
   const expediente: Expediente = {
     id: generateId(),
     perfil,
-    estado: ExpedienteState.S1_CONTEXTO,
+    // S1_CONTEXTO was removed from the enum; this silently produced cases with
+    // estado === undefined whenever the backend was unreachable.
+    estado: ExpedienteState.S0_INTRODUCCION,
     messages: [],
     evidencias: [],
     resumen: {},

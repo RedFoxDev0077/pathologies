@@ -12,6 +12,7 @@ export function MobileStickyCta() {
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pt-2 bg-gradient-to-t from-background via-background/95 to-transparent">
       <Link
         to="/asistente"
+        data-cta="mobile_sticky"
         className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-white shadow-lg shadow-primary/30 transition-transform duration-200 active:scale-[0.98]"
       >
         Analizar mi caso gratis

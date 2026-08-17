@@ -125,7 +125,10 @@ class CasaDiagAPI {
   async uploadEvidence(
     caseId: string,
     file: File,
-    type: 'photo' | 'video',
+    // Widened to match what the caller actually derives from the file's MIME
+    // type. The same strings were already being sent at runtime — only this
+    // annotation was too narrow, so nothing about the request changes.
+    type: 'photo' | 'video' | 'audio' | 'document',
     onProgress?: (progress: number) => void
   ) {
     const formData = new FormData();

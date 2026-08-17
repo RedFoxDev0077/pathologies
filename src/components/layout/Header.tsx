@@ -103,7 +103,7 @@ export function Header() {
               }`}
               asChild
             >
-              <Link to="/asistente">Analizar mi caso</Link>
+              <Link to="/asistente" data-cta="header">Analizar mi caso</Link>
             </Button>
           </div>
 

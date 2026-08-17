@@ -12,15 +12,10 @@ export function ProtectedRoute({ children, requiredRole, redirectTo = '/iniciar-
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  console.log('🛡️ ProtectedRoute checking:', {
-    path: location.pathname,
-    loading,
-    user: user ? { email: user.email, role: user.role } : null,
-    requiredRole
-  });
+  // No logging here: this component re-renders on every guarded navigation and
+  // was printing the signed-in user's email and role to the console each time.
 
   if (loading) {
-    console.log('⏳ ProtectedRoute: Loading user...');
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -29,15 +24,12 @@ export function ProtectedRoute({ children, requiredRole, redirectTo = '/iniciar-
   }
 
   if (!user) {
-    console.log('❌ ProtectedRoute: No user, redirecting to', redirectTo);
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   if (requiredRole && user.role?.toUpperCase() !== requiredRole.toUpperCase()) {
-    console.warn(`⛔ ProtectedRoute: Access denied. Required: ${requiredRole}, User has: ${user.role}`);
     return <Navigate to="/" replace />;
   }
 
-  console.log('✅ ProtectedRoute: Access granted, rendering children');
   return <>{children}</>;
 }

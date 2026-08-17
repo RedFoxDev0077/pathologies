@@ -4,23 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
-
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
-  }
-}
-
-const fireGoogleAdsConversion = (transactionId: string) => {
-  if (typeof window.gtag !== 'function') return;
-  window.gtag('event', 'conversion', {
-    send_to: import.meta.env.VITE_GOOGLE_ADS_CONVERSION || '',
-    value: 108.90,
-    currency: 'EUR',
-    transaction_id: transactionId,
-  });
-};
+import { trackPurchase } from '@/lib/analytics';
 
 /**
  * Payment Success Page
@@ -59,7 +43,23 @@ export default function PagoExitoso() {
           if (response.caseId) {
             setCaseId(response.caseId);
             setStatus('success');
-            fireGoogleAdsConversion(sessionId);
+
+            // Value comes from the backend's own record of what was charged
+            // (stored in cents), never from a hardcoded price — the previous
+            // hardcoded 108.90 no longer matches what is actually billed.
+            const cents =
+              typeof response.totalAmount === 'number'
+                ? response.totalAmount
+                : typeof response.amount === 'number'
+                  ? response.amount
+                  : undefined;
+
+            trackPurchase({
+              transactionId: sessionId,
+              caseId: response.caseId,
+              valueEur: cents !== undefined ? cents / 100 : undefined,
+              verified: true,
+            });
 
             // Redirect to case page after 2 seconds
             setTimeout(() => {
@@ -72,7 +72,13 @@ export default function PagoExitoso() {
           // If verify endpoint doesn't exist or fails, just show success
           // User can navigate to their cases manually
           setStatus('success');
-          fireGoogleAdsConversion(sessionId);
+
+          // Preserves the previous behaviour of reporting the conversion here,
+          // but flagged: the payment could NOT be verified, so this row is a
+          // best guess. Filter on verified=false in GA4 before trusting totals,
+          // and move the conversion server-side (Stripe webhook) to remove the
+          // guesswork entirely.
+          trackPurchase({ transactionId: sessionId, verified: false });
         }
       } catch (error) {
         console.error('Error finding case:', error);

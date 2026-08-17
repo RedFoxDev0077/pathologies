@@ -26,26 +26,21 @@ export default function SignIn() {
     try {
       const userData = await login({ email, password, rememberMe });
 
-      console.log('🔍 Login successful, userData:', userData);
-      console.log('🔍 User role:', userData?.role);
-
-      // Redirect based on user role
-      const from = (location.state as any)?.from?.pathname;
-      console.log('🔍 From path:', from);
+      // Redirect based on user role. Nothing is logged here on purpose: this
+      // path previously printed the user object (email + role) to the console
+      // on every production login.
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from
+        ?.pathname;
 
       if (from) {
-        console.log('✅ Redirecting to from path:', from);
         navigate(from, { replace: true });
       } else if (userData?.role === 'ADMIN') {
-        console.log('✅ ADMIN detected, redirecting to /admin');
         navigate('/admin', { replace: true });
       } else {
-        console.log('✅ Regular user, redirecting to /dashboard');
         navigate('/dashboard', { replace: true });
       }
     } catch (error) {
-      // Error is handled by AuthContext toast
-      console.error('❌ Login failed:', error);
+      // Error is surfaced to the user by the AuthContext toast.
     } finally {
       setIsLoading(false);
     }

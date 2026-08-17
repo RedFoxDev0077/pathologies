@@ -33,7 +33,7 @@ export function FloatingCta() {
           className="w-full h-12 text-base rounded-lg shadow-md shadow-primary/20"
           asChild
         >
-          <Link to="/asistente">
+          <Link to="/asistente" data-cta="floating_bar">
             Analizar mi caso · Gratis
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>

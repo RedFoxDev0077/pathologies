@@ -256,11 +256,10 @@ export function EvidenceUploader({
 
         if (matchedEvidence && matchedEvidence.storageUrl) {
           console.log('✅ Using fresh presigned URL:', matchedEvidence.storageUrl);
+          // Spread the original so mimeType/uploadedAt survive; rebuilding the
+          // object field-by-field dropped them and produced an invalid Evidence.
           setPreviewEvidence({
-            id: currentEvidence.id,
-            type: currentEvidence.type,
-            name: currentEvidence.name,
-            size: currentEvidence.size,
+            ...currentEvidence,
             url: matchedEvidence.storageUrl,
             status: 'completed',
             validated: true,
@@ -395,7 +394,9 @@ export function EvidenceUploader({
                         console.error('❌ Image failed to load:', previewEvidence.url);
                         const imgElement = e.currentTarget;
                         imgElement.style.display = 'none';
-                        const errorDiv = imgElement.nextElementSibling;
+                        // nextElementSibling is typed as Element, which has no
+                        // .style — narrow it before touching the placeholder.
+                        const errorDiv = imgElement.nextElementSibling as HTMLElement | null;
                         if (errorDiv && errorDiv.classList.contains('error-placeholder')) {
                           errorDiv.style.display = 'flex';
                         }

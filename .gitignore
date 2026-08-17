@@ -29,7 +29,9 @@ dist-ssr
 *.sw?
 
 # VPS secret backup - NEVER commit (contains live Stripe/OpenAI/R2 keys)
-vps-backup/
+# The trailing slash matched the directory only, so an archive of it
+# (vps-backup.rar / .zip) was still tracked. Match every form.
+vps-backup*
 
 # Local Claude settings (may contain secrets in permission rules)
 .claude/settings.local.json

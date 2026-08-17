@@ -9,6 +9,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { WhatsAppButton } from "@/components/chat/WhatsAppButton";
+import { CookieConsent } from "@/components/CookieConsent";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // Eagerly load the main landing page for fast initial render
 import Index from "./pages/Index";
@@ -99,7 +101,9 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <AnalyticsTracker />
               <WhatsAppButton />
+              <CookieConsent />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<Index />} />

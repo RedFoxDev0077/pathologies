@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { User, Scale, Building, ArrowRight, Camera, FileVideo, MessageSquare, Shield } from "lucide-react";
 import { UserProfile } from "@/types/expediente";
 import { useExpediente } from "@/hooks/useExpediente";
+import { trackEvent } from "@/lib/analytics";
 
 const profiles = [
   {
@@ -42,6 +43,9 @@ export default function Asistente() {
   const [consentimiento, setConsentimiento] = useState(false);
 
   const handleProfileSelect = (profile: UserProfile) => {
+    // Sits between click_start_analysis and begin_analysis, so the profile
+    // screen and the RGPD checkbox can be isolated as drop-off points.
+    trackEvent('select_profile', { profile });
     setSelectedProfile(profile);
     setShowChecklist(true);
   };
