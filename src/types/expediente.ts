@@ -161,16 +161,27 @@ export interface ChecklistItem {
   required: boolean;
 }
 
+/** Format a cents amount as Spanish euros, e.g. 48400 -> "484,00 €". */
+export const formatEuros = (cents: number): string =>
+  (cents / 100).toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }) + ' €';
+
 // NEW: Single pack option per José's requirements
 export const PACKS: Pack[] = [
   {
     id: 'informe_preliminar_remoto',
     nombre: 'Informe Preliminar Remoto',
     descripcion: 'Análisis gratuito + Pre-informe técnico revisado por profesional',
-    precio: '108,90€',
-    precioBase: 9000,
+    // Amounts in cents. This is the single source of truth for the displayed
+    // price — payment surfaces derive from it via formatEuros() so they cannot
+    // drift apart again. The amount actually charged is set by Stripe (Payment
+    // Link) / the backend and must be kept equal to precioTotal.
+    precio: '484€',
+    precioBase: 40000,
     iva: 21,
-    precioTotal: 10890,
+    precioTotal: 48400,
     incluye: [
       'Chat guiado S0-S7 con asistente IA',
       'Análisis gratuito preliminar (S8) con 5 bloques',

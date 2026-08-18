@@ -6,6 +6,8 @@ import {
   PackType,
   Evidence,
   getStateChecklist,
+  PACKS,
+  formatEuros,
 } from '@/types/expediente';
 import { Stepper } from './Stepper';
 import { EvidenceUploader } from './EvidenceUploader';
@@ -100,7 +102,7 @@ export function ExpedientePanel({
             variant="cta"
             size="lg"
           >
-            Completar pago (108,90€)
+            Completar pago ({formatEuros(PACKS[0].precioTotal)})
           </Button>
         </div>
 
@@ -348,7 +350,7 @@ export function ExpedientePanel({
                       📋 Ver opciones de informe completo
                     </Button>
                     <p className="text-center text-sm font-medium text-foreground mt-2">
-                      90€ + IVA (108,90€ total)
+                      {formatEuros(PACKS[0].precioBase)} + IVA ({formatEuros(PACKS[0].precioTotal)} total)
                     </p>
                     <p className="text-center text-xs text-muted-foreground mt-1">
                       Pre-informe técnico revisado por profesional

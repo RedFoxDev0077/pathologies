@@ -12,7 +12,7 @@ import { AuthCheckpoint } from '@/components/asistente/AuthCheckpoint';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ExpedienteState } from '@/types/expediente';
+import { ExpedienteState, PACKS, formatEuros } from '@/types/expediente';
 import { getPaymentLink, confirmCaseData } from '@/services/stripe';
 
 // Static S0 Welcome Messages (not stored in database)
@@ -291,7 +291,7 @@ export default function AsistenteExpediente() {
                         📋 Ver opciones de informe completo
                       </Button>
                       <p className="text-center text-sm font-medium text-foreground">
-                        90€ + IVA (108,90€ total)
+                        {formatEuros(PACKS[0].precioBase)} + IVA ({formatEuros(PACKS[0].precioTotal)} total)
                       </p>
                       <p className="text-center text-xs text-muted-foreground">
                         Pre-informe técnico revisado por profesional

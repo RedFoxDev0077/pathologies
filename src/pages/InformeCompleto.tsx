@@ -8,6 +8,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, Clock, FileText, Shield, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
 import { trackEvent } from '@/lib/analytics';
+import { PACKS, formatEuros } from '@/types/expediente';
+
+// Single pack; derive the breakdown from it so this page cannot show a price
+// that disagrees with the modal or the pack definition.
+const PACK = PACKS[0];
 
 export default function InformeCompleto() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -172,15 +177,15 @@ export default function InformeCompleto() {
           <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6 border border-primary/20">
             <div className="flex justify-between mb-3 text-base">
               <span className="text-muted-foreground">Base</span>
-              <span className="font-medium">90,00 €</span>
+              <span className="font-medium">{formatEuros(PACK.precioBase)}</span>
             </div>
             <div className="flex justify-between mb-4 pb-4 border-b border-primary/20">
-              <span className="text-muted-foreground">IVA (21%)</span>
-              <span className="font-medium">18,90 €</span>
+              <span className="text-muted-foreground">IVA ({PACK.iva}%)</span>
+              <span className="font-medium">{formatEuros(PACK.precioTotal - PACK.precioBase)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xl font-semibold">TOTAL</span>
-              <span className="text-4xl font-bold text-primary">108,90 €</span>
+              <span className="text-4xl font-bold text-primary">{formatEuros(PACK.precioTotal)}</span>
             </div>
           </div>
 

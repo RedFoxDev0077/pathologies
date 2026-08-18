@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { PACKS, PackType } from '@/types/expediente';
+import { PACKS, PackType, formatEuros } from '@/types/expediente';
 import { CreditCard, Shield, AlertCircle, Loader2, Check } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
 
@@ -76,15 +76,15 @@ export function PaymentModal({
           <div className="rounded-lg border border-border bg-muted/30 p-4">
             <div className="flex justify-between mb-2">
               <span className="text-sm text-muted-foreground">Base</span>
-              <span className="font-medium">90,00€</span>
+              <span className="font-medium">{formatEuros(pack.precioBase)}</span>
             </div>
             <div className="flex justify-between mb-3 pb-3 border-b">
-              <span className="text-sm text-muted-foreground">IVA (21%)</span>
-              <span className="font-medium">18,90€</span>
+              <span className="text-sm text-muted-foreground">IVA ({pack.iva}%)</span>
+              <span className="font-medium">{formatEuros(pack.precioTotal - pack.precioBase)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm font-semibold">Total</span>
-              <span className="text-2xl font-bold text-primary">108,90€</span>
+              <span className="text-2xl font-bold text-primary">{formatEuros(pack.precioTotal)}</span>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export function PaymentModal({
             ) : (
               <>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Pagar 108,90€
+                Pagar {formatEuros(pack.precioTotal)}
               </>
             )}
           </Button>
