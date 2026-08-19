@@ -50,17 +50,35 @@ export type AnalyticsEvent =
   | 'purchase'
   | 'save_for_later';
 
-/** Google Ads conversion labels, supplied per-event via env when available. */
+/** Google Ads conversion labels, supplied per-event via env when available.
+ *
+ * complete_analysis is deliberately NOT here: it must fire exactly once per
+ * expediente, at the moment the analysis is shown, and never on reload/reopen.
+ * That guarantee can't be met by the generic per-event path, so it is fired
+ * explicitly via fireConversionOnce() from the analysis screen instead — see
+ * ADS_CONV_COMPLETE_ANALYSIS below. Keeping it out of this map also prevents a
+ * double count with that explicit call. */
 const CONVERSION_LABELS: Partial<Record<AnalyticsEvent, string | undefined>> = {
   begin_analysis: import.meta.env.VITE_ADS_CONV_BEGIN_ANALYSIS,
-  complete_analysis: import.meta.env.VITE_ADS_CONV_COMPLETE_ANALYSIS,
   click_upgrade_400: import.meta.env.VITE_ADS_CONV_UPGRADE_400,
   click_upgrade_950: import.meta.env.VITE_ADS_CONV_UPGRADE_950,
   begin_checkout: import.meta.env.VITE_ADS_CONV_BEGIN_CHECKOUT,
   purchase: import.meta.env.VITE_ADS_CONV_PURCHASE,
 };
 
-const GA4_ID: string | undefined = import.meta.env.VITE_GA4_ID;
+/**
+ * Google Ads "Análisis gratuito completado" conversion action.
+ * Fired once per expediente from the "Tu pre-diagnóstico está listo" screen.
+ * Overridable via env, with the owner-supplied label as the default so it works
+ * without any CI variable being set.
+ */
+export const ADS_CONV_COMPLETE_ANALYSIS: string =
+  import.meta.env.VITE_ADS_CONV_COMPLETE_ANALYSIS ||
+  'AW-17995643190/_e6vCKa4xeQcELby_oRD';
+
+// GA4 measurement id. Falls back to the property's id so measurement works even
+// if the CI variable is not set; it is a public id, not a secret.
+const GA4_ID: string = import.meta.env.VITE_GA4_ID || 'G-CPBKTDYVCV';
 
 // ---------------------------------------------------------------------------
 // Consent (Consent Mode v2)
@@ -304,6 +322,70 @@ export function trackEvent(
     if (label) {
       window.gtag('event', 'conversion', { send_to: label, ...enriched });
     }
+  } catch {
+    // Analytics must never break the funnel.
+  }
+}
+
+// ---------------------------------------------------------------------------
+// One-time Google Ads conversions (deduplicated per entity)
+// ---------------------------------------------------------------------------
+
+// Same-tab guard: two components (desktop panel + mobile tab) can render the
+// analysis screen in the same load, so an in-memory set stops a double fire
+// before localStorage has been written.
+const firedThisSession = new Set<string>();
+const FIRED_STORE = 'casadiag_fired_conversions';
+
+function loadFired(): Set<string> {
+  try {
+    const raw = localStorage.getItem(FIRED_STORE);
+    return new Set<string>(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function persistFired(keys: Set<string>): void {
+  try {
+    localStorage.setItem(FIRED_STORE, JSON.stringify([...keys]));
+  } catch {
+    /* private mode / quota — the in-memory guard still holds for this tab */
+  }
+}
+
+/**
+ * Fire a Google Ads conversion at most once for a given (label, dedupeId).
+ *
+ * Used for the "Análisis gratuito completado" conversion, which must register
+ * exactly once per expediente and never again when the user reloads, returns to
+ * the "Análisis" tab, or reopens the case later. The persistent guard is keyed
+ * by expediente id, so the guarantee holds across sessions on the same device.
+ */
+export function fireConversionOnce(
+  label: string,
+  dedupeId: string,
+  params: Record<string, unknown> = {},
+): void {
+  try {
+    if (!label || !dedupeId) return;
+    const key = `${label}:${dedupeId}`;
+
+    if (firedThisSession.has(key)) return;
+
+    const stored = loadFired();
+    if (stored.has(key)) {
+      firedThisSession.add(key);
+      return;
+    }
+
+    if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
+
+    window.gtag('event', 'conversion', { send_to: label, ...params });
+
+    firedThisSession.add(key);
+    stored.add(key);
+    persistFired(stored);
   } catch {
     // Analytics must never break the funnel.
   }

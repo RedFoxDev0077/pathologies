@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { S8Analysis } from '@/types/expediente';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, fireConversionOnce, ADS_CONV_COMPLETE_ANALYSIS } from '@/lib/analytics';
 import { Check, Download, Bookmark, ShieldCheck, Phone } from 'lucide-react';
 
 interface S8UpgradeScreenProps {
@@ -64,6 +64,20 @@ export function S8UpgradeScreen({ analysis, expedienteId, caseId }: S8UpgradeScr
   useEffect(() => {
     trackEvent('view_offer', { case_id: caseId, severity });
   }, [caseId, severity]);
+
+  // Google Ads "Análisis gratuito completado". This screen renders only once
+  // the preliminary analysis has been generated and is shown to the user
+  // ("Tu pre-diagnóstico está listo"), which is exactly when the conversion
+  // must register — not on page entry, chat start, uploads or button clicks.
+  // Deduped by expediente, so a reload, a return to the "Análisis" tab, or
+  // reopening the case never produces a second conversion. caseId is the stable
+  // MCV id; fall back to the internal id when it is not yet known.
+  useEffect(() => {
+    const dedupeId = caseId && caseId !== 'SIN-ID' ? caseId : expedienteId;
+    if (dedupeId) {
+      fireConversionOnce(ADS_CONV_COMPLETE_ANALYSIS, dedupeId, { case_id: caseId });
+    }
+  }, [caseId, expedienteId]);
 
   const handleUpgrade = () => {
     trackEvent('click_upgrade_400', { case_id: caseId, severity });
