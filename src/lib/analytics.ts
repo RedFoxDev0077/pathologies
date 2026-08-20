@@ -48,7 +48,13 @@ export type AnalyticsEvent =
   | 'begin_checkout'
   | 'checkout_submitted'
   | 'purchase'
-  | 'save_for_later';
+  | 'save_for_later'
+  // Lead lifecycle (GA4 recommended events), for tracking a lead's journey to
+  // customer. qualify_lead: the visitor became an identifiable, contactable
+  // lead (submitted their data before payment). close_convert_lead: that lead
+  // became a paying customer.
+  | 'qualify_lead'
+  | 'close_convert_lead';
 
 /** Google Ads conversion labels, supplied per-event via env when available.
  *
@@ -382,6 +388,39 @@ export function fireConversionOnce(
     if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
 
     window.gtag('event', 'conversion', { send_to: label, ...params });
+
+    firedThisSession.add(key);
+    stored.add(key);
+    persistFired(stored);
+  } catch {
+    // Analytics must never break the funnel.
+  }
+}
+
+/**
+ * Emit a GA4 event at most once for a given (event, dedupeId), surviving reload
+ * and reopening. Used for the lead lifecycle events so a lead/customer is only
+ * ever counted once (qualify_lead per expediente, close_convert_lead per
+ * transaction), which is what "sin duplicidades" requires for those stages.
+ */
+export function trackEventOnce(
+  event: AnalyticsEvent,
+  dedupeId: string,
+  params: Record<string, unknown> = {},
+): void {
+  try {
+    if (!dedupeId) return;
+    const key = `evt:${event}:${dedupeId}`;
+
+    if (firedThisSession.has(key)) return;
+
+    const stored = loadFired();
+    if (stored.has(key)) {
+      firedThisSession.add(key);
+      return;
+    }
+
+    trackEvent(event, params);
 
     firedThisSession.add(key);
     stored.add(key);

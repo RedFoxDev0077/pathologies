@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
-import { trackPurchase } from '@/lib/analytics';
+import { trackPurchase, trackEventOnce } from '@/lib/analytics';
 
 /**
  * Payment Success Page
@@ -59,6 +59,15 @@ export default function PagoExitoso() {
               caseId: response.caseId,
               valueEur: cents !== undefined ? cents / 100 : undefined,
               verified: true,
+            });
+
+            // Lead lifecycle: this lead has converted to a paying customer.
+            // Deduped per transaction so a reload of the success page cannot
+            // count the same lead twice.
+            trackEventOnce('close_convert_lead', sessionId, {
+              case_id: response.caseId,
+              transaction_id: sessionId,
+              ...(cents !== undefined ? { value: cents / 100, currency: 'EUR' } : {}),
             });
 
             // Redirect to case page after 2 seconds

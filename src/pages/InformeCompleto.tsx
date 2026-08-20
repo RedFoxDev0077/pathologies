@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, Clock, FileText, Shield, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { casaDiagAPI } from '@/services/api/casadiag-api';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackEventOnce } from '@/lib/analytics';
 import { PACKS, formatEuros } from '@/types/expediente';
 
 // Single pack; derive the breakdown from it so this page cannot show a price
@@ -98,6 +98,12 @@ export default function InformeCompleto() {
   };
 
   const handleAuthComplete = () => {
+    // The visitor has just submitted their identifying data (name, DNI,
+    // address, phone) — they are now a qualified, contactable lead. Once per
+    // expediente, so returning to this step does not re-count the lead.
+    trackEventOnce('qualify_lead', caseData?.caseId || caseId || '', {
+      case_id: caseData?.caseId || caseId,
+    });
     setShowAuthCheckpoint(false);
     proceedToPayment();
   };
